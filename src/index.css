@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts Import */
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Hazy Black background yahan bhi set kar do safety ke liye */
+  background-color: #0A0A0A; 
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar ko bhi professional hotel vibe dene ke liye customize kar sakte ho */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+::-webkit-scrollbar-thumb {
+  background: #C6A675;
+}
+
+/* Custom Dropdown Options Styling */
+select option {
+  background-color: #0a0a0a !important; /* Dark background */
+  color: #C6A675 !important;           /* Gold text */
+  padding: 15px !important;
+  font-family: serif !important;       /* Luxury look */
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Remove default focus blue ring in Chrome/Safari */
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(198, 166, 117, 0.2);
+}

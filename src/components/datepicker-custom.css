@@ -1,0 +1,56 @@
+/* Container Background */
+.react-datepicker {
+  background-color: #0f0f0f !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  font-family: inherit !important;
+  color: white !important;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 1) !important;
+}
+
+/* Calendar Header (Month/Year) */
+.react-datepicker__header {
+  background-color: #0f0f0f !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+}
+
+.react-datepicker__current-month, 
+.react-datepicker__day-name {
+  color: #C6A675 !important; /* Gold color for header text */
+  font-size: 0.8rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.react-datepicker__day {
+  color: white !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Day Hover & Selection */
+.react-datepicker__day:hover {
+  background-color: rgba(198, 166, 117, 0.2) !important;
+  color: #c6a675 !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--selected, 
+.react-datepicker__day--in-range,
+.react-datepicker__day--keyboard-selected {
+  background-color: #c6a675 !important;
+  color: black !important;
+  border-radius: 50% !important;
+  font-weight: bold !important;
+}
+
+/* Hide the triangle/arrow at the top */
+.react-datepicker__triangle {
+  display: none !important;
+}
+
+/* Custom styles for the input boxes inside Hero */
+.custom-datepicker-container input::placeholder {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
