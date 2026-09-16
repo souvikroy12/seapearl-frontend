@@ -43,7 +43,7 @@ const InvoicePage = () => {
     useEffect(() => {
         const fetchInvoice = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/bookings/public-invoice/${bookingId}`);
+                const res = await axios.get(`https://seapearl-backend-1.onrender.com/api/bookings/public-invoice/${bookingId}`);
                 const data = res.data?.booking || res.data;
                 if (data) {
                     setBooking(data);

@@ -198,22 +198,22 @@ const Footer = () => {
               </div>
 
               <a 
-                href="tel:+918927550931" 
+                href="tel:+9118002008888" 
                 className="flex items-center gap-4 group transition-colors cursor-pointer"
               >
                 <FaPhoneAlt className="group-hover:text-[#C6A675] transition-colors flex-shrink-0" />
                 <p className="group-hover:text-white transition-colors text-white/60 font-mono tracking-wider">
-                  +91 89275 50931
+                  1800 200 8888 (Toll Free)
                 </p>
               </a>
 
               <a 
-                href="mailto:souvikroy1261@gmail.com" 
+                href="mailto:concierge@seapearlsanctuaries.com" 
                 className="flex items-center gap-4 group transition-colors cursor-pointer"
               >
                 <FaEnvelope className="group-hover:text-[#C6A675] transition-colors flex-shrink-0" />
                 <p className="group-hover:text-white transition-colors text-white/60 font-mono">
-                  souvikroy1261@gmail.com
+                  concierge@seapearlsanctuaries.com
                 </p>
               </a>
             </div>
@@ -226,10 +226,10 @@ const Footer = () => {
             <form onSubmit={handleNewsletterSubmit} className="relative">
               <input 
                 type="email" 
-                value={newsletterEmail}
-                onChange={(e) => setNewsletterEmail(e.target.value)}
+                value={newsletterEmail} 
+                onChange={(e) => setNewsletterEmail(e.target.value)} 
                 placeholder="EMAIL ADDRESS" 
-                className="w-full bg-transparent border-b border-white/10 py-4 text-[10px] tracking-[2px] focus:border-[#C6A675] outline-none transition-all placeholder:text-white/20 text-white pr-10"
+                className="w-full bg-transparent border-b border-white/10 py-4 text-[10px] tracking-[2px] focus:border-[#C6A675] outline-none transition-all placeholder:text-white/20 text-white pr-10" 
               />
               <button 
                 type="submit" 
@@ -241,25 +241,27 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* BOTTOM BAR */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <p className="text-[9px] text-white/20 tracking-[3px] uppercase">
+        {/* BOTTOM BAR - PRODUCTION LUXURY STANDARD */}
+        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <p className="text-[10px] text-white/30 tracking-[3px] uppercase font-medium">
               © {currentYear} SEAPEARL RESORT GROUP
             </p>
-            <div className="hidden md:block w-px h-4 bg-white/5" />
-            <div className="flex gap-6 text-[9px] text-white/20 tracking-[2px] uppercase">
-              <Link to="/privacy" className="hover:text-[#C6A675] transition-colors">Privacy</Link>
-              <Link to="/terms" className="hover:text-[#C6A675] transition-colors">Terms</Link>
+            <div className="hidden sm:block w-px h-3 bg-white/10" />
+            <div className="flex gap-6 text-[10px] text-white/30 tracking-[2px] uppercase">
+              <Link to="/privacy" className="hover:text-[#C6A675] transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-[#C6A675] transition-colors">Terms of Service</Link>
             </div>
           </div>
           
           <div className="flex items-center gap-3">
-             <div className="h-[1px] w-8 bg-white/5" />
-             <div className="w-8 h-8 border border-[#C6A675]/30 rounded-full flex items-center justify-center">
-                <div className="w-1 h-1 bg-[#C6A675] rounded-full animate-pulse" />
-             </div>
-             <div className="h-[1px] w-8 bg-white/5" />
+            <div className="text-[10px] text-white/30 tracking-[2px] uppercase">
+              Architecture & Engineering by{" "}
+              <span className="text-[#C6A675] font-semibold tracking-[2.5px] hover:text-white transition-colors cursor-default">
+                Souvik Roy
+              </span>
+            </div>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#C6A675]/60 animate-pulse ml-1" />
           </div>
         </div>
       </div>

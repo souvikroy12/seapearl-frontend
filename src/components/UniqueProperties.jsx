@@ -83,11 +83,12 @@ const UniqueProperties = () => {
           let apiSuccess = false;
 
           try {
-            const destRes = await axios.get(`http://localhost:5000/api/hotels/search-destination?name=${encodeURIComponent(target.searchQuery)}`);
-            if (searchRes.data && searchRes.data.length > 0) {
-              const { dest_id, dest_type } = searchRes.data[0];
+            const destRes = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/search-destination?name=${encodeURIComponent(target.searchQuery)}`);
+            // FIXED: searchRes replaced with destRes
+            if (destRes.data && destRes.data.length > 0) {
+              const { dest_id, dest_type } = destRes.data[0];
 
-             const listRes = await axios.get(`http://localhost:5000/api/hotels/list`, {
+              const listRes = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/list`, {
                 params: { dest_id, dest_type, sort_by: "popularity" }
               });
 
@@ -129,7 +130,7 @@ const UniqueProperties = () => {
               }
             }
           } catch (innerErr) {
-            // Silent layout block recovery inside core runtime loop execution
+            // Silent fallback boundary
           }
 
           if (!apiSuccess) {
@@ -225,7 +226,6 @@ const UniqueProperties = () => {
                   className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                {/* 🚀 FIXED: Heart button block parameter completely cleared out */}
               </div>
 
               <div className="p-5 space-y-4">

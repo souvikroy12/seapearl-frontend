@@ -14,7 +14,7 @@ const updates = [
     tag: "RESORT",
     date: "12 May 2026",
     title: "A Journey into Our Luxurious Resort",
-    image: "/resort.jpg", // 🚀 FIXED: Pristine Luxury Villa Resort Overlooking Ocean
+    image: "/resort.jpg", //  FIXED: Pristine Luxury Villa Resort Overlooking Ocean
     searchPath: "/search?query=Luxury" 
   },
   {
@@ -22,7 +22,7 @@ const updates = [
     tag: "DINING",
     date: "10 May 2026",
     title: "Exquisite Dining Experiences at Our Resort",
-    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80", // 🚀 FIXED: Michelin Star Elite Fine Dining Setup
+    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80", //  FIXED: Michelin Star Elite Fine Dining Setup
     searchPath: "/search?query=Goa&facility=restaurant" 
   },
   {
@@ -38,7 +38,7 @@ const updates = [
     tag: "ROOMS",
     date: "05 May 2026",
     title: "Unveiling Our New Ocean Front Suites",
-    image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80", // 🚀 FIXED: High-End Ocean Front Master Suite Bedroom
+    image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80", //  FIXED: High-End Ocean Front Master Suite Bedroom
     searchPath: "/search?query=Mumbai" 
   }
 ];

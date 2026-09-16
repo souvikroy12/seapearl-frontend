@@ -71,7 +71,7 @@ const ProfilePage = () => {
         const token = parsedUser.token || (parsedUser.user && parsedUser.user.token);
 
         const res = await axios.get(
-          `http://localhost:5000/api/bookings/my-bookings?email=${userEmail.trim()}`,
+          `https://seapearl-backend-1.onrender.com/api/bookings/my-bookings?email=${userEmail.trim()}`,
           {
             headers: {
               ...(token && { Authorization: `Bearer ${token}` })
@@ -115,7 +115,7 @@ const ProfilePage = () => {
         withCredentials: true
       };
 
-      await axios.put("http://localhost:5000/api/auth/profile", { oldPassword, newPassword }, config);
+      await axios.put("https://seapearl-backend-1.onrender.com/api/auth/profile", { oldPassword, newPassword }, config);
 
       Swal.fire({
         title: "SECURITY ALERT",

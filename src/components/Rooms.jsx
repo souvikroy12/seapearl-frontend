@@ -94,11 +94,11 @@ const Rooms = () => {
           let apiSuccess = false;
 
           try {
-          const destRes = await axios.get(`http://localhost:5000/api/hotels/search-destination?name=${encodeURIComponent(target.searchQuery)}`);
+          const destRes = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/search-destination?name=${encodeURIComponent(target.searchQuery)}`);
             if (destRes.data && destRes.data.length > 0) {
               const { dest_id, dest_type } = destRes.data[0];
 
-              const response = await axios.get(`http://localhost:5000/api/hotels/list`, {
+              const response = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/list`, {
                 params: { dest_id, dest_type, sort_by: "price" }
               });
 

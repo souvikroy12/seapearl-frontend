@@ -9,9 +9,8 @@ const AIChatBot = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    //  MULTILINGUAL VOICE LOGIC 
-
-    const speak = (text, callback) => { // Callback add kiya navigation ke liye
+    // MULTILINGUAL VOICE LOGIC 
+    const speak = (text, callback) => {
         if (!window.speechSynthesis) {
             if (callback) callback();
             return;
@@ -20,7 +19,6 @@ const AIChatBot = () => {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
 
-        // Voices fetch karne ka tarika
         let voices = window.speechSynthesis.getVoices();
 
         const isBengali = /[\u0980-\u09FF]/.test(text);
@@ -34,18 +32,15 @@ const AIChatBot = () => {
 
         if (selectedVoice) {
             utterance.voice = selectedVoice;
-            utterance.lang = selectedVoice.lang; // Important for clean Hindi
+            utterance.lang = selectedVoice.lang;
         }
 
         utterance.rate = 1.0;
 
-        // --- SABSE ZARURI FIX ---
-        // Jab bolna khatam ho jaye, tabhi navigate karega
         utterance.onend = () => {
             if (callback) callback();
         };
 
-        // Agar voice engine atak jaye, toh 3 sec baad auto-navigate kar dega (Safety net)
         window.speechSynthesis.speak(utterance);
 
         if (!selectedVoice && callback) {
@@ -54,7 +49,7 @@ const AIChatBot = () => {
     };
 
     const startVoiceAssistant = () => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitRecognition;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) return alert("Voice recognition not supported in this browser.");
 
         const recognition = new SpeechRecognition();
@@ -66,52 +61,56 @@ const AIChatBot = () => {
     };
 
     // SMART ROUTING & EXECUTION 
- const handleSendMessage = async (manualInput) => {
-    const query = manualInput || input;
-    if (!query.trim()) return;
+    const handleSendMessage = async (manualInput) => {
+        // Double-click / Spam guard
+        if (isLoading) return;
 
-    setInput(query);
-    setIsLoading(true);
- 
-    try {
-       const res = await axios.post('http://localhost:5000/api/ai/chat', { message: query });
-       const data = res.data;
-         
-        // --- FIXED VOICE LOGIC ---
-        // Hum callback function pass karenge jo voice khatam hone par chalega
-        const executeAction = () => {
-            if (data.action === "NAVIGATE" && data.path) {
-                navigate(data.path.toLowerCase().trim()); // Clean path
-            }
-            else if (data.action === "SEARCH" && data.location) {
-                const cleanCity = data.location.trim();
-                const params = new URLSearchParams(); 
-                params.append("query", cleanCity);
-                params.append("location", cleanCity);    
-                navigate(`/search?${params.toString()}`); 
-            }
-            setInput("");
-        };
+        const query = manualInput || input;
+        if (!query.trim()) return;
 
-        if (data.reply) {
-            // Bolna khatam hone ke BAAD executeAction chalega
-            speak(data.reply, executeAction);
-        } else {
-            // Agar reply nahi hai toh direct execute karo
-            executeAction();
+        setInput(query);
+        setIsLoading(true);
+
+        try {
+            const res = await axios.post('https://seapearl-backend-1.onrender.com/api/ai/chat', { message: query });
+            const data = res.data;
+
+            const executeAction = () => {
+                if (data.action === "NAVIGATE" && data.path) {
+                    navigate(data.path.toLowerCase().trim());
+                }
+                else if (data.action === "SEARCH" && data.location) {
+                    const cleanCity = data.location.trim();
+                    const params = new URLSearchParams(); 
+                    params.append("query", cleanCity);
+                    params.append("location", cleanCity);    
+                    navigate(`/search?${params.toString()}`); 
+                }
+                setInput("");
+            };
+
+            if (data.reply) {
+                speak(data.reply, executeAction);
+            } else {
+                executeAction();
+            }
+
+        } catch (err) {
+            console.error("AI Error:", err);
+            // Agar backend se rate-limit warning aayi ho toh wahi bol kar sunaye
+            const rateLimitMsg = err.response?.data?.reply;
+            if (rateLimitMsg) {
+                speak(rateLimitMsg);
+            } else {
+                speak("Sorry, connection weak hai.");
+            }
+        } finally {
+            setIsLoading(false);
         }
-
-    } catch (err) {
-        console.error("AI Error:", err);
-        speak("Sorry, connection weak hai.");
-    } finally {
-        setIsLoading(false);
-    }
-};
+    };
 
     return (
         <div className="w-full max-w-7xl mx-auto px-6 pt-32 pb-16 text-center relative min-h-[60vh] flex flex-col justify-center">
-            {/* Ambient UI Detail */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C6A675]/5 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="relative z-10">
@@ -131,7 +130,7 @@ const AIChatBot = () => {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                            onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSendMessage()}
                             placeholder='Find your thoughts, seek your destination...'
                             className="w-full bg-transparent text-white py-4 px-4 outline-none text-lg placeholder:text-white/20 font-light"
                             disabled={isLoading}
@@ -141,6 +140,7 @@ const AIChatBot = () => {
                             <button
                                 onClick={startVoiceAssistant}
                                 title="Use Voice Command"
+                                disabled={isLoading}
                                 className={`p-4 rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-500 scale-110 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'hover:bg-white/5 text-[#C6A675]'}`}
                             >
                                 <Mic size={22} />
@@ -157,13 +157,13 @@ const AIChatBot = () => {
                     </div>
                 </div>
 
-                {/* Micro-suggestions */}
                 <div className="mt-8 flex flex-wrap justify-center gap-4">
-                    {['Login Page', 'Hotels in Digha',].map((hint, idx) => (
+                    {['Login Page', 'Hotels in Digha'].map((hint, idx) => (
                         <button
                             key={idx}
                             onClick={() => handleSendMessage(hint)}
-                            className="text-[10px] uppercase tracking-[3px] text-white/40 hover:text-[#C6A675] transition-colors border border-white/10 hover:border-[#C6A675]/50 px-5 py-2.5 rounded-full bg-white/5"
+                            disabled={isLoading}
+                            className="text-[10px] uppercase tracking-[3px] text-white/40 hover:text-[#C6A675] transition-colors border border-white/10 hover:border-[#C6A675]/50 px-5 py-2.5 rounded-full bg-white/5 disabled:opacity-30"
                         >
                             {hint}
                         </button>

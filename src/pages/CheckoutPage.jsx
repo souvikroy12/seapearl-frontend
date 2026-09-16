@@ -155,7 +155,7 @@ const CheckoutPage = () => {
                 withCredentials: true
             };
 
-            const response = await axios.post('http://localhost:5000/api/bookings/book-hotel', finalBookingData, config);
+            const response = await axios.post('https://seapearl-backend-1.onrender.com/api/bookings/book-hotel', finalBookingData, config);
             
             if (response.data.success || response.status === 200 || response.status === 201) {
                 Swal.fire({

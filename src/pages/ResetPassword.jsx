@@ -28,7 +28,7 @@ const ResetPassword = () => {
     setError("");
 
     try {
-      const { data } = await axios.put(`http://localhost:5000/api/auth/reset-password/${token}`, { password });
+      const { data } = await axios.put(`https://seapearl-backend-1.onrender.com/api/auth/reset-password/${token}`, { password });
       setMessage(data.message);
       
       // 3 second baad login page pe bhej denge

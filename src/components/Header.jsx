@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { 
@@ -34,28 +34,31 @@ const Header = () => {
     window.dispatchEvent(new Event("currencyUpdated"));
   };
 
-  const updateFavCount = (currentEmail) => {
-    if (!currentEmail) {
-      setFavCount(0);
-      return;
-    }
-    const savedFavs = localStorage.getItem(`seapearl_favourites_${currentEmail}`);
+  // Guest + Authenticated Sync for Wishlist
+  const updateFavCount = useCallback((currentEmail) => {
+    const storageKey = currentEmail 
+      ? `seapearl_favourites_${currentEmail}` 
+      : "seapearl_favourites_guest";
+    const savedFavs = localStorage.getItem(storageKey);
     if (savedFavs) {
-      setFavCount(JSON.parse(savedFavs).length);
+      try {
+        setFavCount(JSON.parse(savedFavs).length);
+      } catch {
+        setFavCount(0);
+      }
     } else {
       setFavCount(0);
     }
-  };
+  }, []);
 
-  // FIXED: Token aur withCredentials ke sath secure call
-  const fetchMyBookingsCount = async (email) => {
+  const fetchMyBookingsCount = useCallback(async (email) => {
     if (!email) return;
     try {
       const info = sessionStorage.getItem("userInfo") || localStorage.getItem("userInfo");
       const token = info ? JSON.parse(info).token : null;
 
       const response = await axios.get(
-        `http://localhost:5000/api/bookings/my-bookings?email=${email.trim()}`,
+        `https://seapearl-backend-1.onrender.com/api/bookings/my-bookings?email=${encodeURIComponent(email.trim())}`,
         {
           headers: {
             ...(token && { Authorization: `Bearer ${token}` })
@@ -78,53 +81,51 @@ const Header = () => {
         setBookingCount(count);
       }
     } catch (error) {
-      console.error("Error fetching header bookings count:", error);
       setBookingCount(0);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const info = sessionStorage.getItem("userInfo") || localStorage.getItem("userInfo");
-    if (info) {
-      const parsedUser = JSON.parse(info);
-      setUserData(parsedUser);
-      
-      const userEmail = parsedUser.email || (parsedUser.user && parsedUser.user.email);
-      
-      if (userEmail) {
-        fetchMyBookingsCount(userEmail);
-        updateFavCount(userEmail);
-      } else {
-        setBookingCount(0);
-        setFavCount(0);
-      }
+    let activeEmail = null;
 
-      setNotifications([
-        { id: 1, text: `Welcome back, ${parsedUser.name || 'Member'}. Your luxury dashboard is active. ✨` },
-        { id: 2, text: "Security Update: Your reservation ledger is synchronized. 🔒" }
-      ]);
+    if (info) {
+      try {
+        const parsedUser = JSON.parse(info);
+        setUserData(parsedUser);
+        activeEmail = parsedUser.email || (parsedUser.user && parsedUser.user.email);
+        
+        if (activeEmail) {
+          fetchMyBookingsCount(activeEmail);
+        }
+        setNotifications([
+          { id: 1, text: `Welcome back, ${parsedUser.name || 'Member'}. Your luxury dashboard is active. ✨` },
+          { id: 2, text: "Security Update: Your reservation ledger is synchronized. 🔒" }
+        ]);
+      } catch {
+        setUserData(null);
+      }
     } else {
       setUserData(null);
       setBookingCount(0);
-      setFavCount(0);
       setNotifications([
         { id: 1, text: "Welcome to SeaPearl Sanctuary. Please login to reserve suites." }
       ]);
     }
 
+    updateFavCount(activeEmail);
+
     const handleStorageChange = () => {
       const liveInfo = sessionStorage.getItem("userInfo") || localStorage.getItem("userInfo");
+      let liveEmail = null;
       if (liveInfo) {
-        const u = JSON.parse(liveInfo);
-        const activeEmail = u.email || (u.user && u.user.email);
-        if (activeEmail) {
-          updateFavCount(activeEmail);
-          fetchMyBookingsCount(activeEmail);
-        }
-      } else {
-        setFavCount(0);
-        setBookingCount(0);
+        try {
+          const u = JSON.parse(liveInfo);
+          liveEmail = u.email || (u.user && u.user.email);
+          if (liveEmail) fetchMyBookingsCount(liveEmail);
+        } catch {}
       }
+      updateFavCount(liveEmail);
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -134,11 +135,11 @@ const Header = () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("favUpdated", handleStorageChange);
     };
-  }, [location]);
+  }, [location.pathname, fetchMyBookingsCount, updateFavCount]);
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/logout", {}, { withCredentials: true });
+      await axios.post("https://seapearl-backend-1.onrender.com/api/auth/logout", {}, { withCredentials: true });
     } catch (err) {
       console.error("Backend logout error:", err);
     }
@@ -146,7 +147,7 @@ const Header = () => {
     localStorage.removeItem("userInfo"); 
     setUserData(null);
     setBookingCount(0);
-    setFavCount(0);
+    updateFavCount(null);
     setIsUserMenuOpen(false);
     setIsNotificationOpen(false);
     navigate("/login");
@@ -237,7 +238,7 @@ const Header = () => {
           <div className="relative" ref={currencyRef}>
             <button 
               onClick={() => setIsCurrencyMenuOpen(!isCurrencyMenuOpen)}
-              className="flex items-center gap-1.5 text-gray-400 hover:text-[#C6A675] transition-colors outline-none border-none bg-transparent"
+              className="flex items-center gap-1.5 text-gray-400 hover:text-[#C6A675] transition-colors outline-none border-none bg-transparent cursor-pointer"
             >
               <Globe size={16} />
               <span className="text-[10px] font-bold tracking-widest">{activeCurrency}</span>
@@ -250,7 +251,7 @@ const Header = () => {
                   <button
                     key={curr.code}
                     onClick={() => handleCurrencyChange(curr.code)}
-                    className={`w-full text-left px-4 py-2 text-[10px] uppercase font-bold tracking-wider transition-all border-none bg-transparent ${
+                    className={`w-full text-left px-4 py-2 text-[10px] uppercase font-bold tracking-wider transition-all border-none bg-transparent cursor-pointer ${
                       activeCurrency === curr.code ? "text-[#C6A675] bg-white/[0.03]" : "text-gray-400 hover:text-white hover:bg-white/[0.02]"
                     }`}
                   >
@@ -270,7 +271,7 @@ const Header = () => {
           <div className="relative" ref={notifRef}>
             <button 
               onClick={() => setIsNotificationOpen(!isNotificationOpen)} 
-              className="text-gray-400 hover:text-white transition-colors relative outline-none border-none bg-transparent"
+              className="text-gray-400 hover:text-white transition-colors relative outline-none border-none bg-transparent cursor-pointer"
             >
               <Bell size={18} />
               {notifications.length > 0 && (
@@ -307,16 +308,16 @@ const Header = () => {
             <div className="relative" ref={menuRef}>
               <button 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-2 text-white group outline-none border-none bg-transparent"
+                className="flex items-center gap-2 text-white group outline-none border-none bg-transparent cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-full border border-[#C6A675] p-0.5 overflow-hidden transition-transform group-hover:scale-105">
-                  <img src={`https://ui-avatars.com/api/?name=${userData.name}&background=C6A675&color=fff`} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                  <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || 'Member')}&background=C6A675&color=fff`} alt="Profile" className="w-full h-full rounded-full object-cover" />
                 </div>
                 <ChevronDown size={14} className={`text-[#C6A675] transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-4 w-56 bg-[#0F0F0F] border border-white/10 rounded-sm py-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <div className="absolute right-0 mt-4 w-56 bg-[#0F0F0F] border border-white/10 rounded-sm py-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[110]">
                   <div className="px-4 pb-2 mb-2 border-b border-white/5">
                     <p className="text-white text-[10px] font-bold uppercase tracking-tighter">{userData.name}</p>
                     <p className="text-[#C6A675] text-[9px]">Premium Member</p>
@@ -333,11 +334,11 @@ const Header = () => {
                     onClick={() => setIsUserMenuOpen(false)}
                     className="block px-4 py-2 text-gray-400 hover:bg-[#C6A675]/10 hover:text-[#C6A675] transition-all uppercase tracking-widest text-[9px] font-bold flex justify-between items-center"
                   >
-                    My Bookings 
+                    <span>My Bookings</span>
                     <span className="bg-[#C6A675] text-black px-1.5 py-0.5 rounded-full text-[8px] font-black">{bookingCount}</span>
                   </Link>
                   <hr className="my-2 border-white/5" />
-                  <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-500/10 transition-all uppercase tracking-widest text-[9px] font-bold flex items-center gap-2 border-none bg-transparent">
+                  <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-500/10 transition-all uppercase tracking-widest text-[9px] font-bold flex items-center gap-2 border-none bg-transparent cursor-pointer">
                     <LogOut size={12} /> Logout
                   </button>
                 </div>

@@ -7,19 +7,19 @@ const showcaseContent = [
     tagline: "LUXURY STAY",
     title: "Experience Unmatched \n Peace and Modern Comfort",
     description: "Experience the perfect blend of comfort and sophistication. Our premium stays offer serene ambiance & modern luxury.",
-    searchQuery: "Mumbai" // 🚀 FIXED: Targets real ultra-luxury hub Mumbai directly to fetch perfect valid listings
+    searchQuery: "Mumbai"
   },
   {
     tagline: "ELITE ADVENTURE",
     title: "Discover The Wild \n In Absolute Luxury",
     description: "Explore the untouched beauty of nature without compromising on the world-class comfort you deserve.",
-    searchQuery: "Kerala" // 🚀 FIXED: Targets premium ecotourism hub Kerala for authentic payloads
+    searchQuery: "Kerala"
   },
   {
     tagline: "SERENE ESCAPE",
     title: "Your Private Oasis \n By The Blue Ocean",
     description: "Wake up to the sound of waves and enjoy a sanctuary designed for ultimate peace and rejuvenation.",
-    searchQuery: "Goa" // 🚀 FIXED: Targets high-tier coastal hub Goa directly to ensure ₹0 issues are completely fixed
+    searchQuery: "Goa"
   }
 ];
 
@@ -28,11 +28,14 @@ const Showcase = () => {
   const [index, setIndex] = useState(0);
   const videoRef = useRef(null);
 
-  useEffect(() => {
+  const handleVideoLoaded = () => {
     if (videoRef.current) {
       videoRef.current.playbackRate = 0.6;
+      videoRef.current.play().catch(() => {
+        // Autoplay policy silent bypass
+      });
     }
-  }, []);
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -41,7 +44,6 @@ const Showcase = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // 🚀 FIXED ACTION PIPELINE: Redirects dynamically based on authentic searchable locations map definitions
   const handleExploreMore = () => {
     const targetQuery = showcaseContent[index].searchQuery;
     navigate(`/search?query=${encodeURIComponent(targetQuery)}`);
@@ -100,6 +102,7 @@ const Showcase = () => {
             <video 
               ref={videoRef}
               src="/videos/luxury.mp4" 
+              onLoadedMetadata={handleVideoLoaded}
               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               autoPlay 
               muted 

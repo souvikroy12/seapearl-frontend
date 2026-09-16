@@ -107,12 +107,12 @@ const SearchResults = () => {
             setLoading(true);
             try {
                 // API call using the absolute mapped location query parameter bounds safely
-                const destRes = await axios.get(`http://localhost:5000/api/hotels/search-destination?name=${encodeURIComponent(activeSearchQuery)}`);
+                const destRes = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/search-destination?name=${encodeURIComponent(activeSearchQuery)}`);
 
                 if (isMounted && destRes.data?.length > 0) {
                     const { dest_id, dest_type } = destRes.data[0];
 
-                    const response = await axios.get(`http://localhost:5000/api/hotels/list`, {
+                    const response = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/list`, {
                         params: { dest_id, dest_type, sort_by: sortBy }
                     });
 

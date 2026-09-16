@@ -20,7 +20,7 @@ const ForgotPassword = () => {
     setMessage("");
 
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/forgot-password", { email }); 
+      const { data } = await axios.post("https://seapearl-backend-1.onrender.com/api/auth/forgot-password", { email }); 
       setMessage(data.message); // "Reset link sent to your email! "
     } catch (err) {
       if (err.response?.status === 429) {

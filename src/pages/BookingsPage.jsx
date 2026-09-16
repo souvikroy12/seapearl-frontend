@@ -275,21 +275,28 @@ const BookingsPage = () => {
     invoiceWindow.document.close();
   };
 
-  useEffect(() => {
-    // LocalStorage ko priority dekar naye tab ke state loss ko handle karein
-    const info = sessionStorage.getItem("userInfo");
-    if (!info) {
+useEffect(() => {
+    // Check both localStorage and sessionStorage so login state is never lost
+    const storedUser = localStorage.getItem("userInfo") || sessionStorage.getItem("userInfo");
+    
+    if (!storedUser) {
       navigate("/login");
       return;
     }
 
-    const parsedUser = JSON.parse(info);
+    let parsedUser;
+    try {
+      parsedUser = JSON.parse(storedUser);
+    } catch (e) {
+      navigate("/login");
+      return;
+    }
 
     const fetchMyBookings = async () => {
       try {
         if (parsedUser.email) {
           const res = await axios.get(
-            `http://localhost:5000/api/bookings/my-bookings?email=${parsedUser.email}`,
+            `https://seapearl-backend-1.onrender.com/api/bookings/my-bookings?email=${encodeURIComponent(parsedUser.email.trim())}`,
             {
               headers: {
                 ...(parsedUser.token && { Authorization: `Bearer ${parsedUser.token}` })
@@ -339,7 +346,7 @@ const BookingsPage = () => {
     try {
       setCancellingId(bookingId);
       setCancelError("");
-      const res = await axios.delete(`http://localhost:5000/api/bookings/${bookingId}`, { withCredentials: true });
+      const res = await axios.delete(`https://seapearl-backend-1.onrender.com/api/bookings/${bookingId}`, { withCredentials: true });
 
       if (res.status === 200 || res.data.success) {
         setBookings((prev) => prev.filter((b) => (b._id || b.id) !== bookingId));

@@ -99,12 +99,12 @@ const HotelDetails = () => {
         const fetchAllDetails = async () => {
             setDescLoading(true);
             try {
-                const photoResponse = await axios.get(`http://localhost:5000/api/hotels/hotel-photos?hotelId=${hotelId}`);
+                const photoResponse = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/hotel-photos?hotelId=${hotelId}`);
                 if (Array.isArray(photoResponse.data)) {
                     setHotelPhotos(photoResponse.data);
                 }
 
-                const descResponse = await axios.get(`http://localhost:5000/api/hotels/hotel-description`, {
+                const descResponse = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/hotel-description`, {
                     params: { hotelId, hotelName: hotel?.name, hotelCity: hotel?.location }
                 });
 
@@ -132,7 +132,7 @@ const HotelDetails = () => {
         setRoomsLoading(true);
         setError(null);
         try {
-            const res = await axios.get(`http://localhost:5000/api/hotels/hotel-rooms`, {
+            const res = await axios.get(`https://seapearl-backend-1.onrender.com/api/hotels/hotel-rooms`, {
                 params: {
                     hotelId,
                     checkinDate: formatISODate(startDate),

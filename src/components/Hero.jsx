@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Hotel, Calendar, Users, MapPin, Search, Star, Plus, Minus, ChevronDown, AlertCircle } from "lucide-react";
+import { Hotel, Calendar, Users, MapPin, Search, Plus, Minus, ChevronDown, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./datepicker-custom.css";
@@ -17,7 +17,6 @@ const images = [
 
 const Hero = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [currentImage, setCurrentImage] = useState(0);
   const [error, setError] = useState("");
 
@@ -39,6 +38,14 @@ const Hero = () => {
     { city: "Mumbai", country: "India" },
   ];
 
+  // Helper: Local Date Formatter (avoids UTC timezone shift bug)
+  const formatISODate = (d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
@@ -55,6 +62,15 @@ const Hero = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleStartDateChange = (date) => {
+    setStartDate(date);
+    if (endDate && date >= endDate) {
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      setEndDate(nextDay);
+    }
+  };
+
   const handleSearch = () => {
     let missing = [];
     if (!destination.trim()) missing.push("Destination");
@@ -64,9 +80,9 @@ const Hero = () => {
       setTimeout(() => setError(""), 3000);
       return;
     }
-    const checkin = startDate.toISOString().split('T')[0];
-    const checkout = endDate.toISOString().split('T')[0];
-    navigate(`/search?query=${encodeURIComponent(destination.trim())}&checkin=${checkin}&checkout=${checkout}`);
+    const checkin = formatISODate(startDate);
+    const checkout = formatISODate(endDate);
+    navigate(`/search?query=${encodeURIComponent(destination.trim())}&checkin=${checkin}&checkout=${checkout}&guests=${guests.adults}`);
   };
 
   const updateCount = (type, operation) => {
@@ -97,16 +113,15 @@ const Hero = () => {
         ))}
       </div>
 
-      {/* 1. HERO TEXT SECTION */}
       <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="relative z-20 text-center px-4 mb-10 mt-10">
       </motion.div>
 
-      {/* 2. AI SEARCH BAR (Top Component) */}
+      {/* AI SEARCH BAR */}
       <div className="relative z-[60] w-full mb-12">
          <AIChatBot />
       </div>
 
-      {/* 3. MANUAL SEARCH SYSTEM (Bottom Component) */}
+      {/* MANUAL SEARCH BAR */}
       <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="relative w-full max-w-7xl px-6 z-50">
         <div className="mb-2 ml-1">
           <span className="text-[#C6A675] text-[10px] font-bold uppercase tracking-[3px] bg-black/60 px-4 py-2 backdrop-blur-md rounded-t-sm border-t border-x border-white/10 inline-flex items-center gap-2">
@@ -116,10 +131,19 @@ const Hero = () => {
 
         <div className="bg-black/40 backdrop-blur-3xl border border-white/10 flex flex-col lg:flex-row items-stretch rounded-b-sm rounded-tr-sm shadow-2xl relative">
           <div className="flex flex-col lg:flex-row flex-grow items-stretch relative">
+            
             {/* Destination */}
             <div className="flex-[1.5] px-6 py-5 lg:border-r border-white/10 relative group hover:bg-white/5 transition-all" ref={destRef}>
               <label className="text-[#C6A675] text-[10px] font-bold uppercase tracking-[2px] flex items-center gap-2 mb-2"><MapPin size={12} /> Destination</label>
-              <input type="text" value={destination} onFocus={() => setShowDestPopup(true)} onChange={(e) => setDestination(e.target.value)} placeholder="Where are you going?" className="bg-transparent text-white text-sm font-light w-full outline-none placeholder:text-white/20" />
+              <input 
+                type="text" 
+                value={destination} 
+                onFocus={() => setShowDestPopup(true)} 
+                onChange={(e) => setDestination(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Where are you going?" 
+                className="bg-transparent text-white text-sm font-light w-full outline-none placeholder:text-white/20" 
+              />
               <AnimatePresence>
                 {showDestPopup && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-[105%] left-0 w-full md:w-[350px] bg-[#0F0F0F] border border-white/10 rounded-lg shadow-2xl py-4 z-[999]">
@@ -138,8 +162,28 @@ const Hero = () => {
             <div className="flex-1 px-6 py-5 lg:border-r border-white/10 hover:bg-white/5 transition-all">
               <label className="text-[#C6A675] text-[10px] font-bold uppercase tracking-[2px] flex items-center gap-2 mb-2"><Calendar size={12} /> Dates</label>
               <div className="flex items-center gap-2">
-                <DatePicker selected={startDate} onChange={(d) => setStartDate(d)} selectsStart startDate={startDate} endDate={endDate} minDate={new Date()} placeholderText="Check-in" className="bg-transparent text-white text-xs outline-none w-full" />
-                <DatePicker selected={endDate} onChange={(d) => setEndDate(d)} selectsEnd startDate={startDate} endDate={endDate} minDate={startDate} placeholderText="Check-out" className="bg-transparent text-white text-xs outline-none w-full" />
+                <DatePicker 
+                  selected={startDate} 
+                  onChange={handleStartDateChange} 
+                  selectsStart 
+                  startDate={startDate} 
+                  endDate={endDate} 
+                  minDate={new Date()} 
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Check-in" 
+                  className="bg-transparent text-white text-xs outline-none w-full cursor-pointer" 
+                />
+                <DatePicker 
+                  selected={endDate} 
+                  onChange={(d) => setEndDate(d)} 
+                  selectsEnd 
+                  startDate={startDate} 
+                  endDate={endDate} 
+                  minDate={startDate || new Date()} 
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Check-out" 
+                  className="bg-transparent text-white text-xs outline-none w-full cursor-pointer" 
+                />
               </div>
             </div>
 
@@ -147,18 +191,39 @@ const Hero = () => {
             <div className="flex-1 px-6 py-5 hover:bg-white/5 transition-all cursor-pointer relative" ref={guestRef}>
               <div onClick={() => setShowGuestPopup(!showGuestPopup)}>
                 <label className="text-[#C6A675] text-[10px] font-bold uppercase tracking-[2px] flex items-center gap-2 mb-2"><Users size={12} /> Guests</label>
-                <div className="text-white text-sm font-light flex items-center justify-between">{guests.adults} Adults, {guests.rooms} Room <ChevronDown size={14} className="text-[#C6A675]" /></div>
+                <div className="text-white text-sm font-light flex items-center justify-between">
+                  {guests.adults} Adults, {guests.rooms} Room 
+                  <ChevronDown size={14} className="text-[#C6A675]" />
+                </div>
               </div>
               <AnimatePresence>
                 {showGuestPopup && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-[105%] right-0 w-64 bg-[#0F0F0F] border border-white/10 rounded-lg p-4 z-[999]">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: 10 }} 
+                    onClick={(e) => e.stopPropagation()} 
+                    className="absolute top-[105%] right-0 w-64 bg-[#0F0F0F] border border-white/10 rounded-lg p-4 z-[999]"
+                  >
                     {['adults', 'rooms'].map((type) => (
                       <div key={type} className="flex justify-between items-center mb-4 last:mb-0">
                         <span className="text-white text-[10px] uppercase font-bold">{type}</span>
                         <div className="flex items-center gap-3">
-                          <button onClick={() => updateCount(type, 'dec')} className="w-6 h-6 border border-white/10 text-[#C6A675] rounded-full">-</button>
+                          <button 
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); updateCount(type, 'dec'); }} 
+                            className="w-6 h-6 border border-white/10 text-[#C6A675] hover:bg-white/5 rounded-full flex items-center justify-center transition-colors"
+                          >
+                            -
+                          </button>
                           <span className="text-white text-xs">{guests[type]}</span>
-                          <button onClick={() => updateCount(type, 'inc')} className="w-6 h-6 border border-white/10 text-[#C6A675] rounded-full">+</button>
+                          <button 
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); updateCount(type, 'inc'); }} 
+                            className="w-6 h-6 border border-white/10 text-[#C6A675] hover:bg-white/5 rounded-full flex items-center justify-center transition-colors"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     ))}
