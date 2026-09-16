@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import Swal from 'sweetalert2';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DatePicker from "react-datepicker";
@@ -69,17 +69,36 @@ const HotelDetails = () => {
         window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
     };
 
+    // Dynamic Photos Array Resolution (Handles Strings, Objects, API URLs accurately)
+    const displayPhotos = useMemo(() => {
+        if (Array.isArray(hotelPhotos) && hotelPhotos.length > 0) {
+            const extracted = hotelPhotos.map(p => {
+                if (typeof p === 'string') return p;
+                return p?.url || p?.photo_url || p?.image || p?.src || null;
+            }).filter(Boolean);
+
+            if (extracted.length > 0) return extracted;
+        }
+
+        const fallbackMain = hotel?.image || hotel?.photo || hotel?.photos?.[0];
+        return [fallbackMain || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80"];
+    }, [hotelPhotos, hotel]);
+
     useEffect(() => {
         const info = sessionStorage.getItem("userInfo") || localStorage.getItem("userInfo");
         if (info) {
-            const parsedUser = JSON.parse(info);
-            const email = parsedUser.email || (parsedUser.user && parsedUser.user.email);
-            if (email) {
-                setUserEmail(email);
-                const currentFavs = JSON.parse(localStorage.getItem(`seapearl_favourites_${email}`)) || [];
-                const exists = currentFavs.some(item => item.id === hotelId);
-                setIsFavourite(exists);
-                return;
+            try {
+                const parsedUser = JSON.parse(info);
+                const email = parsedUser.email || (parsedUser.user && parsedUser.user.email);
+                if (email) {
+                    setUserEmail(email);
+                    const currentFavs = JSON.parse(localStorage.getItem(`seapearl_favourites_${email}`)) || [];
+                    const exists = currentFavs.some(item => item.id === hotelId);
+                    setIsFavourite(exists);
+                    return;
+                }
+            } catch (err) {
+                console.error("Auth parse error:", err);
             }
         }
         setIsFavourite(false);
@@ -140,7 +159,7 @@ const HotelDetails = () => {
                     guests
                 }
             });
-            setRoomData(res.data);
+            setRoomData(res.data || []);
         } catch (err) {
             console.error("Room fetch error:", err);
             setError("Failed to sync live rates. Please try again.");
@@ -157,7 +176,7 @@ const HotelDetails = () => {
     }, [fetchRooms]);
 
     const getFacilityIcon = (facilityName) => {
-        const name = facilityName.toLowerCase();
+        const name = (facilityName || "").toLowerCase();
         const key = Object.keys(ICON_MAP).find(k => name.includes(k));
         return key ? ICON_MAP[key] : <Check size={20} />;
     };
@@ -194,11 +213,6 @@ const HotelDetails = () => {
         });
     };
 
-    // Dynamic Photos Array Resolution
-    const displayPhotos = hotelPhotos.length > 0
-        ? hotelPhotos.map(p => p.url || p)
-        : [hotel?.image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80"];
-
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans pb-20">
             <Helmet>
@@ -223,13 +237,13 @@ const HotelDetails = () => {
                 <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 lg:px-12 h-16">
                     <div className="flex gap-8 items-center py-2">
                         {navItems.map((item) => (
-                            <button key={item.id} onClick={() => scrollToSection(item.id)} className="text-[10px] uppercase tracking-[2px] font-bold text-white/60 hover:text-[#C6A675] transition-all relative group outline-none border-none bg-transparent">
+                            <button key={item.id} onClick={() => scrollToSection(item.id)} className="text-[10px] uppercase tracking-[2px] font-bold text-white/60 hover:text-[#C6A675] transition-all relative group outline-none border-none bg-transparent cursor-pointer">
                                 {item.label}
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#C6A675] transition-all group-hover:w-full"></span>
                             </button>
                         ))}
                     </div>
-                    <button onClick={() => scrollToSection('availability')} className="bg-[#C6A675] text-black text-[10px] font-black uppercase tracking-widest px-6 py-2 rounded-sm hover:bg-white transition-all">
+                    <button onClick={() => scrollToSection('availability')} className="bg-[#C6A675] text-black text-[10px] font-black uppercase tracking-widest px-6 py-2 rounded-sm hover:bg-white transition-all cursor-pointer">
                         Reserve Now
                     </button>
                 </div>
@@ -252,7 +266,6 @@ const HotelDetails = () => {
                                 <MapPin size={14} className="text-[#C6A675]" />
                                 {hotel?.location || "Prime Location"}
                             </p>
-                            {/* DYNAMIC GOOGLE MAP TRIGGER */}
                             <button
                                 onClick={handleOpenMap}
                                 className="text-[#C6A675] hover:text-white cursor-pointer border-b border-[#C6A675]/30 pb-0.5 bg-transparent border-t-0 border-x-0 outline-none transition-colors"
@@ -304,7 +317,7 @@ const HotelDetails = () => {
                                     title: !isExist ? 'Added to your Sanctuaries!' : 'Removed from your Sanctuaries.'
                                 });
                             }}
-                            className={`p-3 border border-white/10 rounded-full transition-all duration-300 ${isFavourite ? 'bg-[#C6A675]/10 text-red-500 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'hover:bg-white/5 text-[#C6A675] bg-transparent'}`}
+                            className={`p-3 border border-white/10 rounded-full transition-all duration-300 cursor-pointer ${isFavourite ? 'bg-[#C6A675]/10 text-red-500 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'hover:bg-white/5 text-[#C6A675] bg-transparent'}`}
                         >
                             <Heart size={18} className={isFavourite ? "fill-red-500 text-red-500" : ""} />
                         </button>
@@ -317,7 +330,7 @@ const HotelDetails = () => {
                                 const hotelImgSrc = displayPhotos[0];
 
                                 const shareMessage = encodeURIComponent(
-                                    `Look at this incredible sanctuary I found on SeaPearl:\n\n${hotelName}\n${hotelLocation}\n\nCheck out the luxury experience here:\n${currentUrl}`
+                                    `Look at this incredible sanctuary I found on SeaPearl:\n\n*${hotelName}*\n📍 ${hotelLocation}\n\nCheck out the luxury experience here:\n${currentUrl}`
                                 );
                                 const whatsappUrl = `https://api.whatsapp.com/send?text=${shareMessage}`;
 
@@ -379,7 +392,7 @@ const HotelDetails = () => {
                                     }
                                 });
                             }}
-                            className="p-3 border border-white/10 rounded-full hover:bg-white/5 text-[#C6A675] bg-transparent transition-colors"
+                            className="p-3 border border-white/10 rounded-full hover:bg-white/5 text-[#C6A675] bg-transparent transition-colors cursor-pointer"
                         >
                             <Share2 size={18} />
                         </button>
@@ -396,15 +409,13 @@ const HotelDetails = () => {
                     </div>
                 </div>
 
-                {/* ACCURATE & DYNAMIC PHOTO GALLERY (NO FALSE COUNT) */}
+                {/* ACCURATE & DYNAMIC PHOTO GALLERY */}
                 <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[500px] mb-12 rounded-3xl overflow-hidden border border-white/5">
-                    {/* Main Featured Photo */}
                     <div className={`${displayPhotos.length > 1 ? "col-span-2 row-span-2" : "col-span-4 row-span-2"} relative group overflow-hidden`}>
                         <img src={displayPhotos[0]} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Master View" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                     </div>
 
-                    {/* Additional Photos (Render only if present) */}
                     {displayPhotos.length > 1 && [1, 2, 3].map((idx) => {
                         const img = displayPhotos[idx];
                         if (!img) return null;
@@ -415,7 +426,6 @@ const HotelDetails = () => {
                         );
                     })}
 
-                    {/* 5th Slot (Clean Photo - No +5 Overlay) */}
                     {displayPhotos.length >= 5 && (
                         <div className="col-span-1 row-span-1 relative group overflow-hidden">
                             <img src={displayPhotos[4]} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="More Photos" />
@@ -469,7 +479,7 @@ const HotelDetails = () => {
                                     <p className="text-[10px] uppercase tracking-[3px] text-white/30 mb-2 font-bold">Starts from</p>
                                     <p className="text-4xl font-serif text-[#C6A675]">₹ {hotel?.price?.toLocaleString() || "8,450"}<span className="text-xs text-white/40 font-sans tracking-normal">/ night</span></p>
                                 </div>
-                                <button onClick={() => scrollToSection('availability')} className="w-full bg-[#C6A675] text-black font-black uppercase tracking-[3px] py-5 rounded-xl hover:bg-white transition-all text-xs border-none outline-none">Check Availability</button>
+                                <button onClick={() => scrollToSection('availability')} className="w-full bg-[#C6A675] text-black font-black uppercase tracking-[3px] py-5 rounded-xl hover:bg-white transition-all text-xs border-none outline-none cursor-pointer">Check Availability</button>
                             </div>
                         </div>
                     </div>
@@ -558,12 +568,9 @@ const HotelDetails = () => {
                                     </tr>
                                 ) : roomData.length > 0 ? (
                                     roomData.map((room, idx) => {
-                                        // Calculate total nights dynamically
                                         const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
                                         const calculatedNights = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-
-                                        // Accurate total price for guests AND nights
-                                        const totalStayPrice = room.price * guests * calculatedNights;
+                                        const totalStayPrice = (room.price || 0) * guests * calculatedNights;
 
                                         return (
                                             <tr key={room.id || idx} className="hover:bg-white/[0.02] border-b border-white/5 group transition-colors">
@@ -575,7 +582,7 @@ const HotelDetails = () => {
                                                 </td>
                                                 <td className="p-8 align-top text-center">
                                                     <div className="flex justify-center gap-1 text-white/40">
-                                                        {Array.from({ length: Math.min(room.capacity, 4) }).map((_, i) => <User key={i} size={16} />)}
+                                                        {Array.from({ length: Math.min(room.capacity || 2, 4) }).map((_, i) => <User key={i} size={16} />)}
                                                     </div>
                                                 </td>
                                                 <td className="p-8 align-top text-left text-white/60 text-xs font-light">
@@ -605,10 +612,10 @@ const HotelDetails = () => {
                                                                 Swal.fire({
                                                                     title: 'LOGIN REQUIRED',
                                                                     html: `
-            <div style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 10px;">
-                Please login to your <b style="color: #C6A675;">SeaPearl</b> account to secure and finalize your room reservation.
-            </div>
-        `,
+                                                                        <div style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 10px;">
+                                                                            Please login to your <b style="color: #C6A675;">SeaPearl</b> account to secure and finalize your room reservation.
+                                                                        </div>
+                                                                    `,
                                                                     icon: 'warning',
                                                                     background: '#0A0A0A',
                                                                     color: '#fff',
@@ -620,12 +627,11 @@ const HotelDetails = () => {
                                                                     cancelButtonText: 'CANCEL',
                                                                     customClass: {
                                                                         popup: 'border border-white/10 rounded-2xl font-serif',
-                                                                        confirmButton: 'text-black font-sans font-bold tracking-widest uppercase px-6 py-3 rounded-md',
-                                                                        cancelButton: 'text-white/60 font-sans font-bold tracking-widest uppercase px-6 py-3 rounded-md border border-white/10'
+                                                                        confirmButton: 'text-black font-sans font-bold tracking-widest uppercase px-6 py-3 rounded-md cursor-pointer',
+                                                                        cancelButton: 'text-white/60 font-sans font-bold tracking-widest uppercase px-6 py-3 rounded-md border border-white/10 cursor-pointer'
                                                                     }
                                                                 }).then((result) => {
                                                                     if (result.isConfirmed) {
-                                                                        // FIXED: Send current path and hotel context to LoginPage
                                                                         navigate('/login', {
                                                                             state: {
                                                                                 from: location.pathname,
@@ -651,7 +657,7 @@ const HotelDetails = () => {
                                                                 });
                                                             }
                                                         }}
-                                                        className="bg-[#C6A675] text-black font-semibold text-sm uppercase py-3 px-6 rounded-md w-full"
+                                                        className="bg-[#C6A675] text-black font-semibold text-sm uppercase py-3 px-6 rounded-md w-full cursor-pointer hover:bg-white transition-all"
                                                     >
                                                         Reserve Room
                                                     </button>
