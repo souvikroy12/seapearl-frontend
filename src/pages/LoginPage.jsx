@@ -137,7 +137,7 @@ const LoginPage = () => {
   });
 
   return (
-    <div className="relative min-h-[calc(100vh-140px)] w-full flex items-center justify-center bg-[#0A0A0A] overflow-hidden px-4 py-8">
+    <div className="relative min-h-[920px] w-full flex items-center justify-center bg-[#0A0A0A] overflow-hidden px-6 pt-24 pb-16">
       {/* Background Image */}
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1436491865332-7a61a109c0f3?q=80&w=2000')] bg-cover bg-center">
         <div className="absolute inset-0 bg-black/85 backdrop-blur-[4px]"></div>
@@ -146,30 +146,30 @@ const LoginPage = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative z-10 w-full max-w-[430px] flex flex-col bg-[#0F0F0F]/95 backdrop-blur-3xl border border-white/10 rounded-[32px] shadow-2xl overflow-hidden my-auto"
+        className="relative z-10 w-full max-w-[480px] flex flex-col bg-[#0F0F0F]/95 backdrop-blur-3xl border border-white/10 rounded-[40px] shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className="pt-6 pb-2 text-center">
-          <h2 className="text-white text-2xl md:text-3xl font-serif mb-1 tracking-tight">Welcome Back</h2>
-          <p className="text-white/40 text-xs font-light italic">Unlock exclusive sanctuary prices.</p>
+        <div className="p-8 pb-4 text-center">
+          <h2 className="text-white text-3xl md:text-4xl font-serif mb-2 tracking-tight">Welcome Back</h2>
+          <p className="text-white/40 text-[10px] text-sm font-light italic">Unlock exclusive sanctuary prices.</p>
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-8 md:px-12 pb-10 custom-scrollbar">
           {error && (
-            <div className="mb-3 p-2.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl text-center italic uppercase tracking-[1px]">
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl text-center italic uppercase tracking-[1px]">
               ⚠️ {error}
             </div>
           )}
 
           {/* Standard Clean Google Button */}
-          <div className="flex justify-center mb-5">
+          <div className="flex justify-center mb-8">
             <button
               type="button"
               onClick={() => triggerGoogleLogin()}
-              className="w-full max-w-[290px] h-[38px] bg-[#131314] hover:bg-[#1a1a1c] border border-white/15 rounded-full flex items-center justify-center gap-2.5 transition-colors cursor-pointer"
+              className="w-[320px] h-[44px] bg-[#131314] hover:bg-[#1a1a1c] border border-white/15 rounded-full flex items-center justify-center gap-3 transition-colors cursor-pointer"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -187,18 +187,18 @@ const LoginPage = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span className="text-white text-xs font-semibold tracking-wide">Sign in with Google</span>
+              <span className="text-white text-sm font-semibold tracking-wide">Sign in with Google</span>
             </button>
           </div>
 
-          <div className="relative mb-5 flex items-center justify-center">
+          <div className="relative mb-8 flex items-center justify-center">
             <div className="absolute w-full border-t border-white/5"></div>
-            <span className="relative bg-[#0F0F0F] px-3 text-[9px] text-white/20 uppercase tracking-[3px] font-bold">or use email</span>
+            <span className="relative bg-[#0F0F0F] px-4 text-[9px] text-white/20 uppercase tracking-[4px] font-bold">or use email</span>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-3.5">
-            <div className="space-y-1.5">
-              <label className="text-[#C6A675] text-[10px] uppercase tracking-[1.5px] font-bold ml-1 flex items-center gap-1.5">
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-[#C6A675] text-[10px] uppercase tracking-[2px] font-bold ml-1 flex items-center gap-2">
                 <Mail size={12} /> Email Address
               </label>
               <input
@@ -206,13 +206,13 @@ const LoginPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 text-white text-sm outline-none focus:border-[#C6A675]/50 transition-all placeholder:text-white/5"
+                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white text-base outline-none focus:border-[#C6A675]/50 transition-all placeholder:text-white/5"
                 placeholder="e.g. james@seapearl.com"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[#C6A675] text-[10px] uppercase tracking-[1.5px] font-bold ml-1 flex items-center gap-1.5">
+            <div className="space-y-2">
+              <label className="text-[#C6A675] text-[10px] uppercase tracking-[2px] font-bold ml-1 flex items-center gap-2">
                 <Lock size={12} /> Password
               </label>
               <div className="relative">
@@ -221,21 +221,21 @@ const LoginPage = () => {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-3 px-4 pr-11 text-white text-sm outline-none focus:border-[#C6A675]/50 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 pr-12 text-white text-base outline-none focus:border-[#C6A675]/50 transition-all"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/20 hover:text-[#C6A675]"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-[#C6A675]"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            <div className="flex justify-end pt-0.5">
-              <Link to="/forgot-password" className="text-[#C6A675] text-[11px] font-bold uppercase tracking-wider hover:text-white transition-colors">
+            <div className="flex justify-end pt-1">
+              <Link to="/forgot-password" className="text-[#C6A675] text-[12px] font-bold uppercase tracking-widest hover:text-white transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -243,22 +243,22 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading || isLocked}
-              className={`w-full py-3.5 rounded-xl uppercase text-[10px] tracking-[2px] flex items-center justify-center gap-1.5 transition-all mt-2 font-black ${isLocked
+              className={`w-full py-4 rounded-2xl uppercase text-[11px] tracking-[2px] flex items-center justify-center gap-2 transition-all mt-4 font-black ${isLocked
                   ? "bg-red-500/20 text-red-400 border border-red-500/30 cursor-not-allowed opacity-70"
                   : "bg-[#C6A675] text-black hover:bg-white active:scale-[0.98]"
                 }`}
             >
               {loading ? (
-                <Loader2 className="animate-spin" size={16} />
+                <Loader2 className="animate-spin" size={18} />
               ) : isLocked ? (
                 "Attempts Exceeded (Locked)"
               ) : (
-                <>Sign In <ChevronRight size={16} /></>
+                <>Sign In <ChevronRight size={18} /></>
               )}
             </button>
           </form>
 
-          <p className="text-center text-white/30 text-xs mt-5 tracking-wide">
+          <p className="text-center text-white/30 text-[14px] mt-8 tracking-wide">
             New to SeaPearl?{" "}
             <Link to="/register" className="text-[#C6A675] font-black hover:text-white ml-1 uppercase">Create Account</Link>
           </p>
