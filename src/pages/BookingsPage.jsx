@@ -276,10 +276,10 @@ const BookingsPage = () => {
   };
 
   useEffect(() => {
-    // Check both localStorage and sessionStorage so login state is never lost
     const storedUser = localStorage.getItem("userInfo") || sessionStorage.getItem("userInfo");
     
     if (!storedUser) {
+      setLoading(false);
       navigate("/login");
       return;
     }
@@ -288,16 +288,14 @@ const BookingsPage = () => {
     try {
       parsedUser = JSON.parse(storedUser);
     } catch (e) {
-      localStorage.removeItem("userInfo");
-      sessionStorage.removeItem("userInfo");
-      navigate("/login");
+      setLoading(false);
       return;
     }
 
     const fetchMyBookings = async () => {
       try {
         if (parsedUser?.email) {
-          const activeToken = parsedUser.token || "";
+          const activeToken = parsedUser.token || localStorage.getItem("token") || "";
 
           const res = await axios.get(
             `https://seapearl-backend-1.onrender.com/api/bookings/my-bookings?email=${encodeURIComponent(parsedUser.email.trim())}`,
@@ -319,7 +317,6 @@ const BookingsPage = () => {
             }
             setBookings(extractedBookings);
 
-            // Agar URL query mein direct bookingId maujood hai toh uska invoice pop up karein
             const searchParams = new URLSearchParams(location.search);
             const targetId = searchParams.get("bookingId");
             if (targetId && extractedBookings.length > 0) {
@@ -334,12 +331,7 @@ const BookingsPage = () => {
         }
       } catch (err) {
         console.error("Error loading itineraries inside bookings dashboard:", err);
-        // Agar backend 401 fek raha hai tabhi session clear karke login par bhejega
-        if (err.response?.status === 401) {
-          localStorage.removeItem("userInfo");
-          sessionStorage.removeItem("userInfo");
-          navigate("/login");
-        }
+        // Auto-logout aur storage wipe poori tarah band kar diya hai
       } finally {
         setLoading(false);
       }
