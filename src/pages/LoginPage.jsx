@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ChevronRight, Loader2 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -15,6 +15,22 @@ const LoginPage = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Agar user already logged in hai toh login screen bypass karke seedhe aage bhejega
+  useEffect(() => {
+    const savedUser = localStorage.getItem("userInfo") || sessionStorage.getItem("userInfo");
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        if (parsed?.token || parsed?.email) {
+          const target = location.state?.from || "/";
+          navigate(target, { replace: true });
+        }
+      } catch (e) {
+        // parsing error ignore
+      }
+    }
+  }, [navigate, location.state]);
 
   // Bulletproof Dynamic Redirect Resolver
   const getRedirectDestination = () => {
