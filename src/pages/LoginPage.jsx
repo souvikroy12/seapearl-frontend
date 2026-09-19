@@ -97,6 +97,7 @@ const LoginPage = () => {
       try {
         const userInfoRes = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+          withCredentials: false,
         });
         const googleUser = userInfoRes.data;
 
