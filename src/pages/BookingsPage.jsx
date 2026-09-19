@@ -275,7 +275,7 @@ const BookingsPage = () => {
     invoiceWindow.document.close();
   };
 
-useEffect(() => {
+  useEffect(() => {
     // Check both localStorage and sessionStorage so login state is never lost
     const storedUser = localStorage.getItem("userInfo") || sessionStorage.getItem("userInfo");
     
@@ -288,18 +288,22 @@ useEffect(() => {
     try {
       parsedUser = JSON.parse(storedUser);
     } catch (e) {
+      localStorage.removeItem("userInfo");
+      sessionStorage.removeItem("userInfo");
       navigate("/login");
       return;
     }
 
     const fetchMyBookings = async () => {
       try {
-        if (parsedUser.email) {
+        if (parsedUser?.email) {
+          const activeToken = parsedUser.token || "";
+
           const res = await axios.get(
             `https://seapearl-backend-1.onrender.com/api/bookings/my-bookings?email=${encodeURIComponent(parsedUser.email.trim())}`,
             {
               headers: {
-                ...(parsedUser.token && { Authorization: `Bearer ${parsedUser.token}` })
+                ...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {})
               },
               withCredentials: true
             }
@@ -330,6 +334,12 @@ useEffect(() => {
         }
       } catch (err) {
         console.error("Error loading itineraries inside bookings dashboard:", err);
+        // Agar backend 401 fek raha hai tabhi session clear karke login par bhejega
+        if (err.response?.status === 401) {
+          localStorage.removeItem("userInfo");
+          sessionStorage.removeItem("userInfo");
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
