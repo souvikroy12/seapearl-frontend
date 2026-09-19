@@ -16,7 +16,7 @@ const destinationsData = [
   { 
     id: 2, 
     name: "SeaPearl Backwaters", 
-    searchQuery: "Kerala",
+    searchQuery: "Alleppey",
     image: "/backwter.jpg", 
     description: "Exclusive Lagoons, India", 
     featured: true 
