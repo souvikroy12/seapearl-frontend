@@ -46,13 +46,18 @@ const CheckoutPage = () => {
                 console.error("Failed to parse userInfo session:", e);
             }
         } else {
-            // Guard: Agar bina session direct link khole toh login par bhej do
             navigate('/login', { state: { from: location.pathname, hotelData: hotelInfo } });
         }
     }, [navigate, location.pathname]);
 
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        // Phone input mein sirf numbers allow honge aur max 10 digits
+        if (name === "phone") {
+            const numericValue = value.replace(/\D/g, '').slice(0, 10);
+            return setFormData({ ...formData, phone: numericValue });
+        }
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e) => {
@@ -66,7 +71,8 @@ const CheckoutPage = () => {
 
         const nameRegex = /^[A-Za-z\s]{2,30}$/;
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        const phoneRegex = /^\+?[0-9]{10,14}$/;
+        // Exact 10-digit Indian mobile number validation (starts with 6, 7, 8, or 9)
+        const phoneRegex = /^[6-9]\d{9}$/;
 
         if (!nameRegex.test(cleanFirstName)) {
             return Swal.fire({
@@ -110,7 +116,7 @@ const CheckoutPage = () => {
         if (!phoneRegex.test(cleanPhone)) {
             return Swal.fire({
                 title: 'INVALID PHONE NUMBER',
-                text: 'Please enter a valid phone number containing 10 to 14 numeric digits.',
+                text: 'Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9.',
                 icon: 'warning',
                 background: '#0A0A0A',
                 color: '#fff',
@@ -122,13 +128,12 @@ const CheckoutPage = () => {
 
         setLoading(true);
 
-        // Sanitize numeric price value from string (e.g., "₹ 7,750" -> 7750)
         const numericTotalPrice = Number(String(hotelInfo.totalPrice).replace(/[^0-9.-]+/g, "")) || 0;
 
         const finalBookingData = {
             firstName: cleanFirstName,
             lastName: cleanLastName,
-            email: cleanEmail, // User ka custom ya pre-filled email
+            email: cleanEmail,
             phone: cleanPhone,
             country: formData.country,
             bookingFor: formData.bookingFor,
@@ -304,7 +309,12 @@ const CheckoutPage = () => {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm text-white/70">Phone Number <span className="text-red-500">*</span></label>
                                     <input
-                                        type="text" name="phone" value={formData.phone} required
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        required
+                                        maxLength={10}
+                                        placeholder="10-digit mobile number"
                                         className="bg-transparent border border-white/20 rounded-md p-3 text-white focus:border-[#C6A675] focus:outline-none transition-colors"
                                         onChange={handleInputChange}
                                     />
